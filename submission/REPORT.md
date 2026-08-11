@@ -6,10 +6,10 @@
 - Repository URL: https://github.com/minhlt6/K3-DAY13-NoAINoLife
 - Commit SHA cuối: 2fb219c6d7c0bca2b65cd954c7020677d6f471d5
 - Thành viên và vai trò:
-  1. Hoàng Duy Linh - 2A202601159 (Nhóm trưởng)
-  2. Lê Tiến Minh - 2A202601193 (Observability Lead)
-  3. Nguyễn Tuấn Anh - 2A202601395 (Developer)
-  4. Nguyễn Phúc Huy Hoàng - 2A202601951 (QA / Testing Engineer)
+  1. Hoàng Duy Linh - 2A202601159 (Nhóm trưởng - QA & Incident Analyst)
+  2. Lê Tiến Minh - 2A202601193 (Logging & Middleware Specialist)
+  3. Nguyễn Tuấn Anh - 2A202601395 (Security & Compliance Specialist)
+  4. Nguyễn Phúc Huy Hoàng - 2A202601951 (Metrics & Alerting Specialist)
 
 ## 2. Kết quả kỹ thuật
 
@@ -60,7 +60,7 @@ Với mỗi thành viên, ghi rõ nhiệm vụ và link commit/PR tương ứng.
 
 | Thành viên | Phần việc | Commit/PR | Điều đã học |
 |---|---|---|---|
-| Hoàng Duy Linh - 2A202601159 (Nhóm trưởng) | Quản lý dự án, kiểm tra báo cáo và hỗ trợ nghiệm thu toàn bộ hệ thống | Commit [`2fb219c`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/2fb219c6d7c0bca2b65cd954c7020677d6f471d5) | Quản lý quy trình triển khai Observability và kiểm thử sự cố RAG/LLM. |
-| Lê Tiến Minh (2A202601193) | Cấu hình Correlation ID Middleware, PII Scrubbing, Langfuse SDK Tracing, Metric Dashboard, Alert Rules & Runbook, Điều tra Challenge | Commit [`2fb219c`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/2fb219c6d7c0bca2b65cd954c7020677d6f471d5) | Nắm vững quy trình Observability 3 lớp (Metrics → Traces → Logs), kỹ năng điều tra sự cố RAG/LLM và thiết lập SLO/Alerting. |
-| Nguyễn Tuấn Anh (2A202601395)  | Hỗ trợ kiểm thử giao diện API, chạy load test và thu thập bằng chứng log | Commit [`2fb219c`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/2fb219c6d7c0bca2b65cd954c7020677d6f471d5) | Hiểu quy trình xử lý PII Redaction và truyền tải Correlation ID. |
-| Nguyễn Phúc Huy Hoàng | Hỗ trợ kiểm tra validator script, rà soát cấu hình alert rules và runbook | Commit [`2fb219c`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/2fb219c6d7c0bca2b65cd954c7020677d6f471d5) | Nắm rõ cách thiết lập SLO, cảnh báo dựa trên triệu chứng và xử lý sự cố. |
+| Hoàng Duy Linh - 2A202601159 (Nhóm trưởng) | **QA & Incident Analyst**: Chạy load test sinh dữ liệu, thiết kế Dashboard Spec (`docs/dashboard-spec.md`), chủ trì điều tra Challenge (CP3) và hoàn thiện báo cáo `REPORT.md`. | Commit [`403d109`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/403d109f829ec9758a742db94ce1f0af57557622) | Nắm vững quy trình điều tra sự cố 3 lớp (Metrics → Traces → Logs), kỹ năng phân tích và tổng hợp báo cáo. |
+| Lê Tiến Minh - 2A202601193 | **Logging & Middleware**: Phụ trách CP1 — Xây dựng `CorrelationIdMiddleware`, xử lý đính kèm header `x-request-id` và gán log metadata với `bind_contextvars`. | Commit [`2fb219c`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/2fb219c6d7c0bca2b65cd954c7020677d6f471d5) | Hiểu sâu kiến trúc FastAPI Middleware, quản lý contextvars và luồng dữ liệu log hệ thống. |
+| Nguyễn Tuấn Anh - 2A202601395 | **Security & Compliance**: Phụ trách CP1 — Uncomment `scrub_event` processor, cấu hình regex patterns che PII (`email`, `phone`, `cccd`, `credit_card`, `passport`, `address_vn`) và nâng cấp che PII toàn cục. | Commit [`8be56c7`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/8be56c704db784522ab675108d780342fc276961) | Nắm vững kỹ thuật PII scrubbing, bảo mật thông tin người dùng trong JSON logging theo tiêu chuẩn compliance. |
+| Nguyễn Phúc Huy Hoàng - 2A202601951 | **Metrics & Alerting**: Phụ trách CP2 — Tích hợp Langfuse SDK Tracing, đo đếm chỉ số `error_rate_pct`, viết SLO (`config/slo.yaml`), Alert rules (`config/alert_rules.yaml`) và Runbook (`docs/alerts.md`). | Commit [`5cbb458`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/5cbb458cac2fbd4c7070b0ef4fb4956822f01d3d) | Thành thạo tích hợp APM/Langfuse SDK, xây dựng SLO/SLI và thiết kế hệ thống cảnh báo symptom-based. |
