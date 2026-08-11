@@ -28,9 +28,22 @@ class LabAgent:
 
     @observe(as_type="generation", capture_input=False, capture_output=False)
     def run(self, user_id: str, feature: str, session_id: str, message: str) -> AgentResult:
+        from structlog.contextvars import bind_contextvars, get_contextvars
+        langfuse_client = get_langfuse_client()
+
+        if tracing_enabled():
+            try:
+                langfuse_client.update_current_trace(
+                    user_id=hash_user_id(user_id),
+                    session_id=session_id,
+                    tags=["lab", feature, self.model],
+                    metadata={"correlation_id": get_contextvars().get("correlation_id", "MISSING")},
+                )
+            except Exception:
+                pass
+
         started = time.perf_counter()
         docs = retrieve(message)
-        langfuse_client = get_langfuse_client()
         prompt = resolve_prompt(
             langfuse_client,
             feature=feature,
@@ -43,35 +56,40 @@ class LabAgent:
         latency_ms = int((time.perf_counter() - started) * 1000)
         cost_usd = self._estimate_cost(response.usage.input_tokens, response.usage.output_tokens)
 
-        langfuse_client.update_current_trace(
-            user_id=hash_user_id(user_id),
-            session_id=session_id,
-            tags=["lab", feature, self.model],
-            metadata={
-                "prompt_name": prompt.name,
-                "prompt_label": prompt.label,
-                "prompt_version": prompt.version,
-                "prompt_source": prompt.source,
-            },
-        )
-        langfuse_client.update_current_generation(
-            model=self.model,
-            metadata={
-                "doc_count": len(docs),
-                "query_preview": summarize_text(message),
-                "prompt_name": prompt.name,
-                "prompt_label": prompt.label,
-                "prompt_version": prompt.version,
-                "prompt_source": prompt.source,
-                "prompt_fetch_error": prompt.fetch_error,
-            },
-            usage_details={
-                "prompt_tokens": response.usage.input_tokens,
-                "completion_tokens": response.usage.output_tokens,
-            },
-            cost_details={"total": cost_usd},
-            prompt=prompt.managed_prompt,
-        )
+        if tracing_enabled():
+            try:
+                langfuse_client.update_current_trace(
+                    user_id=hash_user_id(user_id),
+                    session_id=session_id,
+                    tags=["lab", feature, self.model],
+                    metadata={
+                        "prompt_name": prompt.name,
+                        "prompt_label": prompt.label,
+                        "prompt_version": prompt.version,
+                        "prompt_source": prompt.source,
+                    },
+                )
+                langfuse_client.update_current_generation(
+                    model=self.model,
+                    metadata={
+                        "doc_count": len(docs),
+                        "query_preview": summarize_text(message),
+                        "prompt_name": prompt.name,
+                        "prompt_label": prompt.label,
+                        "prompt_version": prompt.version,
+                        "prompt_source": prompt.source,
+                        "prompt_fetch_error": prompt.fetch_error,
+                    },
+                    usage_details={
+                        "prompt_tokens": response.usage.input_tokens,
+                        "completion_tokens": response.usage.output_tokens,
+                    },
+                    cost_details={"total": cost_usd},
+                    prompt=prompt.managed_prompt,
+                )
+                langfuse_client.flush()
+            except Exception:
+                pass
 
         metrics.record_request(
             latency_ms=latency_ms,

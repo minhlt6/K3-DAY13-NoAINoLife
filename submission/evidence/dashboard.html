@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 13 AI Observability Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            padding: 24px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #334155;
+        }
+        .header h1 { font-size: 24px; font-weight: 700; color: #38bdf8; }
+        .meta-badges { display: flex; gap: 12px; font-size: 13px; }
+        .badge { background: #1e293b; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        @media (max-width: 1200px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 18px;
+            position: relative;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .card-title { font-size: 15px; font-weight: 600; color: #e2e8f0; }
+        .threshold-label { font-size: 12px; color: #ef4444; font-weight: 600; background: rgba(239, 68, 68, 0.1); padding: 2px 8px; border-radius: 4px; }
+        .chart-container { position: relative; height: 220px; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>Day 13 AI Observability Dashboard</h1>
+            <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">Data Source: <code>data/logs.jsonl</code> | Refresh: 30s | Time Range: 60m</p>
+        </div>
+        <div class="meta-badges">
+            <div class="badge">Total Requests: <strong style="color:#38bdf8;">111</strong></div>
+            <div class="badge">P95 Latency: <strong style="color:#a855f7;">2651.0ms</strong></div>
+            <div class="badge">Total Cost: <strong style="color:#22c55e;">$0.2288</strong></div>
+            <div class="badge">Avg Quality: <strong style="color:#eab308;">0.88</strong></div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- 1. Latency -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">1. Latency Percentiles (P50, P95, P99)</span>
+                <span class="threshold-label">SLO: P95 ≤ 3000ms</span>
+            </div>
+            <div class="chart-container"><canvas id="chart-latency"></canvas></div>
+        </div>
+
+        <!-- 2. Traffic -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">2. Request Traffic (req/min)</span>
+                <span class="threshold-label">Threshold: ≥ 1 rpm</span>
+            </div>
+            <div class="chart-container"><canvas id="chart-traffic"></canvas></div>
+        </div>
+
+        <!-- 3. Errors -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">3. Error Rate & Breakdown (%)</span>
+                <span class="threshold-label">SLO: Error ≤ 2%</span>
+            </div>
+            <div class="chart-container"><canvas id="chart-errors"></canvas></div>
+        </div>
+
+        <!-- 4. Cost -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">4. Cost Over Time (USD)</span>
+                <span class="threshold-label">Threshold: Total ≤ $2.50</span>
+            </div>
+            <div class="chart-container"><canvas id="chart-cost"></canvas></div>
+        </div>
+
+        <!-- 5. Tokens -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">5. Tokens (Input vs Output)</span>
+                <span class="threshold-label">Threshold: Sum ≤ 50,000</span>
+            </div>
+            <div class="chart-container"><canvas id="chart-tokens"></canvas></div>
+        </div>
+
+        <!-- 6. Quality -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">6. Quality Proxy Score (0 - 1)</span>
+                <span class="threshold-label">SLO: Mean ≥ 0.75</span>
+            </div>
+            <div class="chart-container"><canvas id="chart-quality"></canvas></div>
+        </div>
+    </div>
+
+    <script>
+        const labels = ["03:25", "03:28", "03:29", "03:31", "03:38", "03:41", "03:42", "03:45", "04:03", "04:08", "04:09", "04:14", "04:18", "04:27", "04:41", "04:42"];
+
+        // Helper for threshold line plugin
+        const createThresholdPlugin = (value, labelText, color = '#ef4444') => ({
+            id: 'thresholdLine_' + Math.random(),
+            afterDraw(chart) {
+                const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+                if (!y) return;
+                const yPos = y.getPixelForValue(value);
+                ctx.save();
+                ctx.beginPath();
+                ctx.setLineDash([6, 6]);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.moveTo(left, yPos);
+                ctx.lineTo(right, yPos);
+                ctx.stroke();
+
+                ctx.fillStyle = color;
+                ctx.font = '11px sans-serif';
+                ctx.fillText(labelText, right - 110, yPos - 6);
+                ctx.restore();
+            }
+        });
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12 } } },
+            scales: {
+                x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
+                y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } }
+            }
+        };
+
+        // 1. Latency
+        new Chart(document.getElementById('chart-latency'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'P50 (ms)', data: [0, 0, 150.0, 150.0, 150.0, 150.0, 150.0, 150.0, 150.0, 0, 150.0, 150.0, 150.0, 0, 2651.0, 2651.0], borderColor: '#38bdf8', tension: 0.3 },
+                    { label: 'P95 (ms)', data: [0, 0, 151.6, 150.0, 150.0, 150.0, 150.0, 152.8, 150.0, 0, 185.6, 543.1, 553.1, 0, 3174.6, 2652.8], borderColor: '#a855f7', tension: 0.3 },
+                    { label: 'P99 (ms)', data: [0, 0, 152.7, 150.0, 150.0, 150.0, 150.0, 154.5, 150.0, 0, 711.5, 799.8, 817.0, 0, 3354.1, 2653.0], borderColor: '#f43f5e', tension: 0.3 }
+                ]
+            },
+            options: chartOptions,
+            plugins: [createThresholdPlugin(3000, 'SLO: 3000ms')]
+        });
+
+        // 2. Traffic
+        new Chart(document.getElementById('chart-traffic'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Requests/min', data: [0, 0, 10, 10, 10, 10, 1, 10, 10, 0, 20, 10, 10, 0, 8, 2], backgroundColor: '#38bdf8' }]
+            },
+            options: chartOptions,
+            plugins: [createThresholdPlugin(1, 'Min: 1 rpm', '#22c55e')]
+        });
+
+        // 3. Errors
+        new Chart(document.getElementById('chart-errors'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Error Rate (%)', data: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true }]
+            },
+            options: chartOptions,
+            plugins: [createThresholdPlugin(2.0, 'SLO: 2%')]
+        });
+
+        // 4. Cost
+        new Chart(document.getElementById('chart-cost'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Cost ($/min)', data: [0.0, 0.0, 0.01799, 0.02005, 0.02143, 0.02152, 0.0017, 0.0215, 0.01905, 0.0, 0.04328, 0.01981, 0.01991, 0.0, 0.01591, 0.0066], backgroundColor: '#22c55e' }]
+            },
+            options: chartOptions,
+            plugins: [createThresholdPlugin(2.5, 'Max: $2.50')]
+        });
+
+        // 5. Tokens
+        new Chart(document.getElementById('chart-tokens'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Tokens In', data: [0, 0, 330, 330, 330, 330, 22, 330, 330, 0, 826, 413, 413, 0, 283, 121], backgroundColor: '#6366f1' },
+                    { label: 'Tokens Out', data: [0, 0, 1133, 1271, 1363, 1369, 109, 1367, 1204, 0, 2720, 1238, 1245, 0, 1004, 416], backgroundColor: '#8b5cf6' }
+                ]
+            },
+            options: { ...chartOptions, scales: { ...chartOptions.scales, x: { stacked: true }, y: { stacked: true } } },
+            plugins: [createThresholdPlugin(50000, 'Limit: 50k')]
+        });
+
+        // 6. Quality
+        new Chart(document.getElementById('chart-quality'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Avg Quality Score', data: [0.0, 0.0, 0.88, 0.88, 0.88, 0.88, 0.8, 0.88, 0.88, 0.0, 0.88, 0.88, 0.88, 0.0, 0.86, 0.87], borderColor: '#eab308', tension: 0.3 }]
+            },
+            options: chartOptions,
+            plugins: [createThresholdPlugin(0.75, 'SLO: 0.75', '#eab308')]
+        });
+    </script>
+</body>
+</html>
