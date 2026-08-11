@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from structlog.contextvars import bind_contextvars, clear_contextvars
+
 from app import agent as agent_module
 
 
@@ -37,6 +39,14 @@ def test_agent_links_prompt_version_to_trace_and_generation(monkeypatch) -> None
     monkeypatch.setenv("LANGFUSE_PROMPT_LABEL", "production")
     client = RecordingLangfuseClient()
     monkeypatch.setattr(agent_module, "get_langfuse_client", lambda: client)
+    monkeypatch.setattr(agent_module, "retrieve", agent_module.retrieve.__wrapped__)
+    monkeypatch.setattr(
+        agent_module.FakeLLM,
+        "generate",
+        agent_module.FakeLLM.generate.__wrapped__,
+    )
+    clear_contextvars()
+    bind_contextvars(correlation_id="req-a1b2c3d4")
 
     agent = agent_module.LabAgent()
     agent_module.LabAgent.run.__wrapped__(
@@ -50,6 +60,10 @@ def test_agent_links_prompt_version_to_trace_and_generation(monkeypatch) -> None
     trace_metadata = client.trace_updates[-1]["metadata"]
     generation_update = client.generation_updates[-1]
     assert trace_metadata == {
+        "correlation_id": "req-a1b2c3d4",
+        "feature": "qa",
+        "model": "claude-sonnet-4-5",
+        "env": "dev",
         "prompt_name": "day13-chat",
         "prompt_label": "production",
         "prompt_version": "3",

@@ -27,6 +27,8 @@ def test_chat_response_log_exposes_quality_for_dashboard(
         )
 
     assert response.status_code == 200
+    assert response.headers["x-request-id"].startswith("req-")
+    assert float(response.headers["x-response-time-ms"]) >= 0
     events = [json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines()]
     response_event = next(event for event in events if event["event"] == "response_sent")
     assert response_event["quality_score"] == response.json()["quality_score"]

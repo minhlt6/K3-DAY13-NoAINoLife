@@ -4,13 +4,16 @@ slis:
   latency_p95_ms:
     objective: 3000
     target: 99.5
-    note: Replace with your group's target
+    note: P95 dưới 3 giây giữ trải nghiệm chat tương tác ở mức chấp nhận được.
   error_rate_pct:
     objective: 2
     target: 99.0
+    note: Tối đa 2% request thất bại trong cửa sổ đánh giá.
   daily_cost_usd:
     objective: 2.5
     target: 100.0
+    note: Ngân sách lab cho một ngày chạy thử.
   quality_score_avg:
     objective: 0.75
     target: 95.0
+    note: Quality proxy trung bình không thấp hơn 0.75.

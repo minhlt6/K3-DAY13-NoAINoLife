@@ -1,0 +1,113 @@
+{
+  "events": [
+    {
+      "ts": "2026-08-11T04:35:57.095282+00:00",
+      "action": "setup",
+      "created": [
+        {
+          "label": "baseline",
+          "version": 1
+        },
+        {
+          "label": "candidate",
+          "version": 2
+        }
+      ]
+    },
+    {
+      "ts": "2026-08-11T04:36:27.710015+00:00",
+      "action": "setup",
+      "created": []
+    },
+    {
+      "ts": "2026-08-11T04:36:34.472075+00:00",
+      "action": "trace",
+      "label": "baseline",
+      "version": 1,
+      "trace_id": "7913bba4e140df54704599220eaff912",
+      "trace_url": "https://cloud.langfuse.com/project/cmso2s1o803umad0d818asoqx/traces/7913bba4e140df54704599220eaff912",
+      "correlation_id": "req-6450ca31",
+      "latency_ms": 415
+    },
+    {
+      "ts": "2026-08-11T04:36:37.528246+00:00",
+      "action": "trace",
+      "label": "candidate",
+      "version": 2,
+      "trace_id": "0b7c47a8c59df2736d75ce36fce62687",
+      "trace_url": "https://cloud.langfuse.com/project/cmso2s1o803umad0d818asoqx/traces/0b7c47a8c59df2736d75ce36fce62687",
+      "correlation_id": "req-fc77ce65",
+      "latency_ms": 413
+    },
+    {
+      "ts": "2026-08-11T04:36:40.811204+00:00",
+      "action": "promote",
+      "target_version": 2,
+      "before": {
+        "prompt_name": "day13-chat",
+        "labels": {
+          "baseline": 1,
+          "candidate": 2,
+          "production": 1
+        }
+      },
+      "after": {
+        "prompt_name": "day13-chat",
+        "labels": {
+          "baseline": 1,
+          "candidate": 2,
+          "production": 2
+        }
+      }
+    },
+    {
+      "ts": "2026-08-11T04:36:43.784414+00:00",
+      "action": "trace",
+      "label": "production",
+      "version": 2,
+      "trace_id": "dd526c4ae338da3a634a8c0a4051b360",
+      "trace_url": "https://cloud.langfuse.com/project/cmso2s1o803umad0d818asoqx/traces/dd526c4ae338da3a634a8c0a4051b360",
+      "correlation_id": "req-38b243bb",
+      "latency_ms": 401
+    },
+    {
+      "ts": "2026-08-11T04:36:46.966305+00:00",
+      "action": "rollback",
+      "target_version": 1,
+      "before": {
+        "prompt_name": "day13-chat",
+        "labels": {
+          "baseline": 1,
+          "candidate": 2,
+          "production": 2
+        }
+      },
+      "after": {
+        "prompt_name": "day13-chat",
+        "labels": {
+          "baseline": 1,
+          "candidate": 2,
+          "production": 1
+        }
+      }
+    },
+    {
+      "ts": "2026-08-11T04:36:50.349245+00:00",
+      "action": "trace",
+      "label": "production",
+      "version": 1,
+      "trace_id": "74dca0a6055732e3954c9bb9d8910b64",
+      "trace_url": "https://cloud.langfuse.com/project/cmso2s1o803umad0d818asoqx/traces/74dca0a6055732e3954c9bb9d8910b64",
+      "correlation_id": "req-e62c070f",
+      "latency_ms": 501
+    }
+  ],
+  "current_status": {
+    "prompt_name": "day13-chat",
+    "labels": {
+      "baseline": 1,
+      "candidate": 2,
+      "production": 1
+    }
+  }
+}

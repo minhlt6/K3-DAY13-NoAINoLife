@@ -29,6 +29,16 @@ Giữ time range mặc định 60 phút, refresh 30 giây và hiển thị thres
 python scripts/validate_dashboard.py
 ```
 
+Repo đã có dashboard Streamlit tại `streamlit_app.py`. Sau khi cài requirements,
+chạy dashboard bằng:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Mở `http://localhost:8501`. Dashboard mặc định dùng cửa sổ 60 phút, tự refresh
+mỗi 30 giây và đọc trực tiếp `data/logs.jsonl`.
+
 Validator kiểm tra cấu trúc contract; nó không thể chứng minh biểu đồ trong ảnh dùng đúng dữ liệu. Evidence runtime vẫn bắt buộc.
 
 ## Cách kiểm tra runtime

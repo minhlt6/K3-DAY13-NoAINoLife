@@ -4,6 +4,8 @@ __pycache__/
 .DS_Store
 data/logs.jsonl
 data/audit.jsonl
+data/streamlit*.log
+tmp/langfuse-evidence-profile/
 .env
 .pytest_cache/
 .antigravity/

@@ -40,6 +40,7 @@ Trong lab này, Langfuse dùng cho trace và prompt versioning; nguồn chuẩn 
 1. Làm theo [SETUP.md](SETUP.md).
 2. Chạy API: `uvicorn app.main:app --reload --env-file .env`.
 3. Ở terminal khác, chạy: `python scripts/load_test.py`.
+4. Mở dashboard: `streamlit run streamlit_app.py` rồi truy cập `http://localhost:8501`.
 4. Mở `data/logs.jsonl` và ghi lại những trường còn thiếu.
 5. Chạy `python scripts/validate_logs.py` để lấy baseline.
 6. Chạy `python scripts/validate_dashboard.py` để hiểu contract của dashboard.
