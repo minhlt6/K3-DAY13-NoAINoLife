@@ -6,7 +6,7 @@
 - Repository URL: https://github.com/minhlt6/K3-DAY13-NoAINoLife
 - Commit SHA cuối: 2fb219c6d7c0bca2b65cd954c7020677d6f471d5
 - Thành viên và vai trò:
-  1. Hoàng Duy Linh (Nhóm trưởng)
+  1. Hoàng Duy Linh - 2A202601159 (Nhóm trưởng)
   2. Lê Tiến Minh - 2A202601193 (Observability Lead)
   3. Nguyễn Tuấn Anh (Developer)
   4. Nguyễn Phúc Huy Hoàng (QA / Testing Engineer)
