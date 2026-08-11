@@ -9,15 +9,15 @@
 
 ## 2. Kết quả kỹ thuật
 
-- Điểm `validate_logs.py`: 30/100 (Baseline)
+- Điểm `validate_logs.py`: 100/100 (Baseline ban đầu: 30/100)
 - Tổng số traces:
-- Số PII leak còn lại:
+- Số PII leak còn lại: 0
 - Link/đường dẫn dashboard:
 
 ## 3. Logging và tracing
 
-- Evidence correlation ID:
-- Evidence PII redaction:
+- Evidence correlation ID: `submission/evidence/log_correlation_id.png` (hoặc log line chứa `"correlation_id": "req-58fda279"`)
+- Evidence PII redaction: `submission/evidence/log_pii_redacted.png` (hoặc log line chứa `[REDACTED_EMAIL]`, `[REDACTED_PHONE_VN]`)
 - Evidence trace waterfall:
 - Giải thích một span đáng chú ý:
 
