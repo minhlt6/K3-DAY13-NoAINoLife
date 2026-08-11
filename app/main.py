@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -19,6 +22,18 @@ configure_logging()
 log = get_logger()
 app = FastAPI(title="Day 13 Observability Lab")
 app.add_middleware(CorrelationIdMiddleware)
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    correlation_id = getattr(request.state, "correlation_id", "unknown")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": type(exc).__name__},
+        headers={"x-request-id": correlation_id},
+    )
+
+
 agent = LabAgent()
 
 
@@ -44,9 +59,15 @@ async def metrics() -> dict:
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: Request, body: ChatRequest) -> ChatResponse:
-    # TODO: Enrich logs with request context (user_id_hash, session_id, feature, model, env)
-    # bind_contextvars(...)
-    
+    # Enrich — tất cả log sau đây tự động có các trường này
+    bind_contextvars(
+        user_id_hash=hash_user_id(body.user_id),
+        session_id=body.session_id,
+        feature=body.feature,
+        model="claude-sonnet-4-5",
+        env=os.getenv("APP_ENV", "dev"),
+    )
+
     log.info(
         "request_received",
         service="api",
@@ -88,7 +109,6 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
             payload={"detail": str(exc), "message_preview": summarize_text(body.message)},
         )
         raise HTTPException(status_code=500, detail=error_type) from exc
-
 
 @app.post("/incidents/{name}/enable")
 async def enable_incident(name: str) -> JSONResponse:
