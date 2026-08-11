@@ -115,6 +115,7 @@ async def enable_incident(name: str) -> JSONResponse:
     try:
         enable(name)
         log.warning("incident_enabled", service="control", payload={"name": name})
+        log_audit_event("incident_enabled", {"incident_name": name, "service": "control"})
         return JSONResponse({"ok": True, "incidents": status()})
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -125,6 +126,7 @@ async def disable_incident(name: str) -> JSONResponse:
     try:
         disable(name)
         log.warning("incident_disabled", service="control", payload={"name": name})
+        log_audit_event("incident_disabled", {"incident_name": name, "service": "control"})
         return JSONResponse({"ok": True, "incidents": status()})
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

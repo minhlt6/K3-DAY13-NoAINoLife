@@ -54,7 +54,25 @@
 - Fix action: Tắt incident sự cố bằng lệnh `python scripts/inject_incident.py --disable`.
 - Preventive measure: Đặt timeout cho khâu RAG retrieval, bổ sung bộ nhớ đệm (cache) cho tài liệu truy vấn thường gặp và thiết lập cảnh báo `high_latency_p95`.
 
-## 7. Đóng góp cá nhân
+## 7. Cost Optimization và Audit Log
+
+### 7.1. Tối ưu chi phí (Cost Optimization)
+- **Tình huống sự cố (`cost_spike`)**: Khi bật incident `cost_spike` (`python scripts/inject_incident.py --scenario cost_spike`), số lượng `output_tokens` bị nhân 4 lần khiến tổng chi phí LLM tăng vọt.
+- **Tổng chi phí ban đầu (Before Optimization)**: `total_cost_usd` = **$0.086055** (Tổng tokens: **5,820 tokens** cho 10 request). Bằng chứng: [`submission/evidence/cost_optimization_before.png`](evidence/cost_optimization_before.png).
+- **Giải pháp triển khai**: Áp dụng bộ nhớ đệm phản hồi (**Response Caching**) tại `LabAgent` cho các truy vấn trùng lặp và giới hạn số lượng token đầu ra.
+- **Tổng chi phí sau tối ưu (After Optimization)**: `total_cost_usd` = **$0.022140** (Tổng tokens: **1,507 tokens** cho 10 request). Bằng chứng: [`submission/evidence/cost_optimization_after.png`](evidence/cost_optimization_after.png).
+- **Hiệu quả tối ưu**: Giảm **74.30%** tổng chi phí API LLM và lượng token tiêu thụ.
+
+### 7.2. Nhật ký kiểm toán (Audit Log)
+- **Cấu hình**: Tích hợp module [`app/audit.py`](../app/audit.py) ghi nhận riêng biệt các sự kiện quản trị hệ thống vào đường dẫn `AUDIT_LOG_PATH` (`data/audit.jsonl`).
+- **Các sự kiện ghi nhận**: `incident_enabled`, `incident_disabled`, và các thay đổi cấu hình quan trọng.
+- **Cấu trúc log mẫu**:
+  ```json
+  {"timestamp": "2026-08-11T07:21:33.945733+00:00", "event_type": "incident_enabled", "details": {"incident_name": "cost_spike"}}
+  {"timestamp": "2026-08-11T07:21:33.947732+00:00", "event_type": "incident_disabled", "details": {"incident_name": "cost_spike"}}
+  ```
+
+## 8. Đóng góp cá nhân
 
 Với mỗi thành viên, ghi rõ nhiệm vụ và link commit/PR tương ứng.
 
@@ -62,5 +80,5 @@ Với mỗi thành viên, ghi rõ nhiệm vụ và link commit/PR tương ứng.
 |---|---|---|---|
 | Hoàng Duy Linh - 2A202601159 (Nhóm trưởng) | **QA & Incident Analyst**: Chạy load test sinh dữ liệu, thiết kế Dashboard Spec (`docs/dashboard-spec.md`), chủ trì điều tra Challenge (CP3) và hoàn thiện báo cáo `REPORT.md`. | Commit [`403d109`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/403d109f829ec9758a742db94ce1f0af57557622) | Nắm vững quy trình điều tra sự cố 3 lớp (Metrics → Traces → Logs), kỹ năng phân tích và tổng hợp báo cáo. |
 | Lê Tiến Minh - 2A202601193 | **Logging & Middleware**: Phụ trách CP1 — Xây dựng `CorrelationIdMiddleware`, xử lý đính kèm header `x-request-id` và gán log metadata với `bind_contextvars`. | Commit [`2fb219c`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/2fb219c6d7c0bca2b65cd954c7020677d6f471d5) | Hiểu sâu kiến trúc FastAPI Middleware, quản lý contextvars và luồng dữ liệu log hệ thống. |
-| Nguyễn Tuấn Anh - 2A202601395 | **Security & Compliance**: Phụ trách CP1 — Uncomment `scrub_event` processor, cấu hình regex patterns che PII (`email`, `phone`, `cccd`, `credit_card`, `passport`, `address_vn`) và nâng cấp che PII toàn cục. | Commit [`8be56c7`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/8be56c704db784522ab675108d780342fc276961) | Nắm vững kỹ thuật PII scrubbing, bảo mật thông tin người dùng trong JSON logging theo tiêu chuẩn compliance. |
-| Nguyễn Phúc Huy Hoàng - 2A202601951 | **Metrics & Alerting**: Phụ trách CP2 — Tích hợp Langfuse SDK Tracing, đo đếm chỉ số `error_rate_pct`, viết SLO (`config/slo.yaml`), Alert rules (`config/alert_rules.yaml`) và Runbook (`docs/alerts.md`). | Commit [`5cbb458`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/5cbb458cac2fbd4c7070b0ef4fb4956822f01d3d) | Thành thạo tích hợp APM/Langfuse SDK, xây dựng SLO/SLI và thiết kế hệ thống cảnh báo symptom-based. |
+| Nguyễn Tuấn Anh - 2A202601395 | **Security & Compliance**: Phụ trách CP1 — Uncomment `scrub_event` processor, cấu hình regex patterns che PII (`email`, `phone`, `cccd`, `credit_card`, `passport`, `address_vn`), nâng cấp che PII toàn cục và triển khai Audit Logging (`data/audit.jsonl`). | Commit [`8be56c7`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/8be56c704db784522ab675108d780342fc276961) | Nắm vững kỹ thuật PII scrubbing, bảo mật thông tin người dùng và xây dựng nhật ký kiểm toán hệ thống. |
+| Nguyễn Phúc Huy Hoàng - 2A202601951 | **Metrics & Alerting**: Phụ trách CP2 — Tích hợp Langfuse SDK Tracing, đo đếm chỉ số `error_rate_pct`, triển khai Cost Optimization (caching/token capping), viết SLO (`config/slo.yaml`), Alert rules (`config/alert_rules.yaml`) và Runbook (`docs/alerts.md`). | Commit [`5cbb458`](https://github.com/minhlt6/K3-DAY13-NoAINoLife/commit/5cbb458cac2fbd4c7070b0ef4fb4956822f01d3d) | Thành thạo tích hợp APM/Langfuse SDK, kỹ năng tối ưu hóa chi phí LLM và thiết kế hệ thống cảnh báo. |

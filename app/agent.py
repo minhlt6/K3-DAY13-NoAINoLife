@@ -27,11 +27,24 @@ class LabAgent:
     def __init__(self, model: str = "claude-sonnet-4-5") -> None:
         self.model = model
         self.llm = FakeLLM(model=model)
+        self._cache: dict[tuple[str, str], AgentResult] = {}
 
     @observe(as_type="generation", capture_input=False, capture_output=False)
     def run(self, user_id: str, feature: str, session_id: str, message: str) -> AgentResult:
         started = time.perf_counter()
         docs = retrieve(message)
+        cache_key = (feature, message)
+        if cache_key in self._cache:
+            cached = self._cache[cache_key]
+            return AgentResult(
+                answer=cached.answer,
+                latency_ms=int((time.perf_counter() - started) * 1000),
+                tokens_in=0,
+                tokens_out=0,
+                cost_usd=0.0,
+                quality_score=cached.quality_score,
+            )
+
         langfuse_client = get_langfuse_client()
         prompt = resolve_prompt(
             langfuse_client,
@@ -44,6 +57,15 @@ class LabAgent:
         quality_score = self._heuristic_quality(message, response.text, docs)
         latency_ms = int((time.perf_counter() - started) * 1000)
         cost_usd = self._estimate_cost(response.usage.input_tokens, response.usage.output_tokens)
+        result = AgentResult(
+            answer=response.text,
+            latency_ms=latency_ms,
+            tokens_in=response.usage.input_tokens,
+            tokens_out=response.usage.output_tokens,
+            cost_usd=cost_usd,
+            quality_score=quality_score,
+        )
+        self._cache[cache_key] = result
 
         trace_metadata = {
             "prompt_name": prompt.name,
