@@ -8,7 +8,7 @@
 - Thành viên và vai trò:
   1. Hoàng Duy Linh - 2A202601159 (Nhóm trưởng)
   2. Lê Tiến Minh - 2A202601193 (Observability Lead)
-  3. Nguyễn Tuấn Anh (Developer)
+  3. Nguyễn Tuấn Anh - 2A202601395 (Developer)
   4. Nguyễn Phúc Huy Hoàng (QA / Testing Engineer)
 
 ## 2. Kết quả kỹ thuật
