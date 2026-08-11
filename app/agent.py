@@ -64,6 +64,7 @@ class LabAgent:
         langfuse_client.update_current_generation(
             model=self.model,
             metadata={
+                "feature": feature,
                 "doc_count": len(docs),
                 "query_preview": summarize_text(message),
                 "prompt_name": prompt.name,
@@ -79,6 +80,8 @@ class LabAgent:
             cost_details={"total": cost_usd},
             prompt=prompt.managed_prompt,
         )
+        if hasattr(langfuse_client, "flush"):
+            langfuse_client.flush()
 
         metrics.record_request(
             latency_ms=latency_ms,
